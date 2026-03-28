@@ -7,6 +7,9 @@ namespace FlowdeskTaskboardApi.Models.DbContext
 {
     public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
+        public DbSet<TaskItem> Tasks { get; set; }
+
+
         public DbSet<ApplicationLog> Logs { get; set; }
         public DbSet<ErrorLog> ErrorLogs { get; set; }
 
