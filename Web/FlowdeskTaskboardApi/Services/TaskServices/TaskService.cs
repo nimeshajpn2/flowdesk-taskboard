@@ -25,7 +25,7 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
             _logger = logger;
         }
 
-        //Create task
+        //Create Task
         public async Task<TaskItem?> CreateAsync(CreateTaskViewModel dto)
         {
             try
@@ -36,6 +36,11 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
                 if (dto.DueDate < DateTime.UtcNow)
                     throw new Exception("Due date cannot be in the past");
 
+                // Check project exists
+                var project = await _unitOfWork.Repository<Project>().GetByIdAsync(dto.ProjectId);
+                if (project == null)
+                    throw new Exception("Project not found");
+
                 var task = new TaskItem
                 {
                     Title = dto.Title,
@@ -43,13 +48,13 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
                     AssignedToUserId = dto.AssignedToUserId,
                     Priority = dto.Priority,
                     DueDate = dto.DueDate,
-                    Status = "ToDo"
+                    Status = "ToDo",
+                    ProjectId = dto.ProjectId
                 };
 
                 await _unitOfWork.Repository<TaskItem>().AddAsync(task);
                 await _unitOfWork.CommitAsync();
 
-                // Log to both DB and ILogger
                 await _logService.LogAsync("Information", $"Task created: {task.Title}", source: "CreateAsync");
                 _logger.LogInformation("Task created: {TaskId} - {Title}", task.Id, task.Title);
 
@@ -63,7 +68,7 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
             }
         }
 
-        //Update task details 
+        //Update Task Details
         public async Task UpdateAsync(int id, UpdateTaskViewModel dto)
         {
             try
@@ -84,6 +89,16 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
                 task.Priority = dto.Priority ?? task.Priority;
                 task.DueDate = dto.DueDate ?? task.DueDate;
 
+                // Update Project if provided
+                if (dto.ProjectId.HasValue)
+                {
+                    var project = await _unitOfWork.Repository<Project>().GetByIdAsync(dto.ProjectId.Value);
+                    if (project == null)
+                        throw new Exception("Project not found");
+
+                    task.ProjectId = dto.ProjectId.Value;
+                }
+
                 repo.Update(task);
                 await _unitOfWork.CommitAsync();
 
@@ -98,7 +113,7 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
             }
         }
 
-        //Update status
+        //Update Status
         public async Task UpdateStatusAsync(int id, string status)
         {
             try
@@ -128,7 +143,7 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
             }
         }
 
-        //Archive task
+        //Archive Task
         public async Task ArchiveAsync(int id)
         {
             try
@@ -151,6 +166,38 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
             {
                 await _errorService.SaveErrorAsync(ex, "ArchiveAsync");
                 _logger.LogError(ex, "Error archiving task {TaskId}", id);
+                throw;
+            }
+        }
+
+        //Get Tasks By Project 
+        public async Task<List<TaskItem>> GetTasksByProjectAsync(int projectId, string? status = null, string? priority = null, int? assignedToUserId = null)
+        {
+            try
+            {
+                var repo = _unitOfWork.Repository<TaskItem>();
+                var query = repo.Query().Where(t => t.ProjectId == projectId && !t.IsArchived);
+
+                if (!string.IsNullOrWhiteSpace(status))
+                    query = query.Where(t => t.Status == status);
+
+                if (!string.IsNullOrWhiteSpace(priority))
+                    query = query.Where(t => t.Priority == priority);
+
+                if (assignedToUserId.HasValue)
+                    query = query.Where(t => t.AssignedToUserId == assignedToUserId.Value);
+
+                var tasks = await Task.FromResult(query.ToList());
+
+                await _logService.LogAsync("Information", $"Fetched tasks for project: {projectId}", source: "GetTasksByProjectAsync");
+                _logger.LogInformation("Fetched {Count} tasks for project {ProjectId}", tasks.Count, projectId);
+
+                return tasks;
+            }
+            catch (Exception ex)
+            {
+                await _errorService.SaveErrorAsync(ex, "GetTasksByProjectAsync");
+                _logger.LogError(ex, "Error fetching tasks for project {ProjectId}", projectId);
                 throw;
             }
         }
