@@ -1,6 +1,5 @@
 ﻿using FlowdeskTaskboardApi.Models.ViewModels;
 using FlowdeskTaskboardApi.Services.TaskServices;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlowdeskTaskboardApi.Controllers
@@ -18,34 +17,46 @@ namespace FlowdeskTaskboardApi.Controllers
 
         // Create Task
         [HttpPost]
-        public async Task<IActionResult> Create(CreateTaskViewModel dto)
+        public async Task<IActionResult> Create([FromBody] CreateTaskViewModel dto)
         {
             var result = await _service.CreateAsync(dto);
             return Ok(result);
         }
 
-        //Update Task
+        // Update Task Details
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateTaskViewModel dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTaskViewModel dto)
         {
             await _service.UpdateAsync(id, dto);
             return NoContent();
         }
 
-        //Update Status
+        // Update Status
         [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, UpdateStatusViewModel dto)
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusViewModel dto)
         {
             await _service.UpdateStatusAsync(id, dto.Status);
             return NoContent();
         }
 
-        //Archive
+        // Archive Task
         [HttpDelete("{id}")]
         public async Task<IActionResult> Archive(int id)
         {
             await _service.ArchiveAsync(id);
             return NoContent();
+        }
+
+        // Get Tasks By Project 
+        [HttpGet("project/{projectId}")]
+        public async Task<IActionResult> GetTasksByProject(
+            int projectId,
+            [FromQuery] string? status = null,
+            [FromQuery] string? priority = null,
+            [FromQuery] int? assignedToUserId = null)
+        {
+            var tasks = await _service.GetTasksByProjectAsync(projectId, status, priority, assignedToUserId);
+            return Ok(tasks);
         }
     }
 }

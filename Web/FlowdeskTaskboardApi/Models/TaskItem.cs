@@ -17,5 +17,9 @@
         public bool IsArchived { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Foreign key to Project
+        public int ProjectId { get; set; }
+        public Project Project { get; set; } = null!;
     }
 }
