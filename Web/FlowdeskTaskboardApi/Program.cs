@@ -1,3 +1,5 @@
+using FlowdeskTaskboardApi.CommonData;
+using FlowdeskTaskboardApi.Helper;
 using FlowdeskTaskboardApi.Models.DbContext;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,6 +27,9 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<ILogService, LogService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IErrorService, ErrorService>();
 
 //cors
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>

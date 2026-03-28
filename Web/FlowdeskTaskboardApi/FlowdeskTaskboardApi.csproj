@@ -28,9 +28,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="Helper\" />
     <Folder Include="Interface\" />
-    <Folder Include="Models\ViewModels\" />
     <Folder Include="Shared\" />
     <Folder Include="Services\" />
   </ItemGroup>
