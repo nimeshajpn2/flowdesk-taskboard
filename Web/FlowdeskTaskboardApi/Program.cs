@@ -1,6 +1,7 @@
 using FlowdeskTaskboardApi.CommonData;
 using FlowdeskTaskboardApi.Helper;
 using FlowdeskTaskboardApi.Models.DbContext;
+using FlowdeskTaskboardApi.Services.TaskServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -30,7 +31,7 @@ builder.Services
 builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IErrorService, ErrorService>();
-
+builder.Services.AddScoped<TaskService>();
 //cors
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
