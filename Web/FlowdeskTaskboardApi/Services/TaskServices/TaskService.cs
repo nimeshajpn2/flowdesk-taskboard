@@ -207,10 +207,12 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
 
         //Get Tasks by Project 
         public async Task<List<TaskItem>> GetTasksByProjectAsync(
-            int projectId,
-            string? status = null,
-            string? priority = null,
-            int? assignedToUserId = null)
+        int projectId,
+        string? status = null,
+        string? priority = null,
+        int? assignedToUserId = null,
+        int pageNumber = 1,
+        int pageSize = 10)
         {
             try
             {
@@ -225,6 +227,11 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
 
                 if (assignedToUserId.HasValue)
                     query = query.Where(t => t.AssignedToUserId == assignedToUserId.Value);
+
+                // Pagination
+                query = query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize);
 
                 var tasks = query.ToList();
 

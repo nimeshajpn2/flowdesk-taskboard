@@ -68,15 +68,15 @@ public class AuthController : ControllerBase
                 .FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userIdClaim))
-                return Unauthorized(new { Message = "User not logged in" });
+                return Unauthorized(new { Message = ResponseMessages.Auth.UserNotLoggedin }); 
 
             // userIdClaim is usually a GUID string in Identity
             var user = await _userService.GetByIdAsync(userIdClaim);
 
             if (user is null)
-                return NotFound(new { Message = "User not found" });
+                return NotFound(new { Message = ResponseMessages.Auth.UserNotFound }); 
 
-            return Ok(new { Message = "User info fetched", Data = user });
+            return Ok(new { Message = ResponseMessages.Auth.UserInfoFetched, Data = user });
         }
         catch (Exception ex)
         {
@@ -96,6 +96,6 @@ public class AuthController : ControllerBase
             Expires = DateTime.UtcNow.AddDays(-1) // expire it immediately
         });
 
-        return Ok(new { Message = "Logged out successfully" });
+        return Ok(new { Message = ResponseMessages.Auth.LoggedOutSuccessfully }); 
     }
 }
