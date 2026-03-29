@@ -1,16 +1,21 @@
-﻿using FlowdeskTaskboardApi.Models.ViewModels;
+﻿using FlowdeskTaskboardApi.Interface;
+using FlowdeskTaskboardApi.Models.ViewModels;
 using FlowdeskTaskboardApi.Services.TaskServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlowdeskTaskboardApi.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/tasks")]
+    
     public class TasksController : ControllerBase
     {
-        private readonly TaskService _service;
+        private readonly ITaskService _service;
 
-        public TasksController(TaskService service)
+        public TasksController(ITaskService service)
         {
             _service = service;
         }
