@@ -1,12 +1,17 @@
 ﻿using FlowdeskTaskboardApi.CommonData;
 using FlowdeskTaskboardApi.Helper;
+using FlowdeskTaskboardApi.Interface;
 using FlowdeskTaskboardApi.Models;
 using FlowdeskTaskboardApi.Models.ViewModels;
+using FlowdeskTaskboardApi.Models.ViewModels.Task;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
+using System.Threading.Tasks;
 
 namespace FlowdeskTaskboardApi.Services.TaskServices
 {
-    public class TaskService
+    public class TaskService : ITaskService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogService _logService;
@@ -26,7 +31,7 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
         }
 
         //Create Task
-        public async Task<TaskItem?> CreateAsync(CreateTaskViewModel dto)
+        public async Task<ResponseTaskItemViewModel?> CreateAsync(CreateTaskViewModel dto)
         {
             try
             {
@@ -58,7 +63,22 @@ namespace FlowdeskTaskboardApi.Services.TaskServices
                 await _logService.LogAsync("Information", $"Task created: {task.Title}", source: "CreateAsync");
                 _logger.LogInformation("Task created: {TaskId} - {Title}", task.Id, task.Title);
 
-                return task;
+                //Create Response Object
+                var ResponseTaskItem = new ResponseTaskItemViewModel
+                {
+                    Id = task.Id,
+                    Title = task.Title,
+                    Description = task.Description,
+                    AssignedToUserId = task.AssignedToUserId,
+                    Priority = task.Priority,
+                    DueDate = task.DueDate,
+                    Status = task.Status,
+                    IsArchived = task.IsArchived,
+                    CreatedAt = task.CreatedAt,
+                    ProjectId = task.ProjectId
+                };
+
+                return ResponseTaskItem;
             }
             catch (Exception ex)
             {

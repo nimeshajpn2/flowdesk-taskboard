@@ -1,22 +1,29 @@
 ﻿using FlowdeskTaskboardApi.CommonData;
 using FlowdeskTaskboardApi.Helper;
+using FlowdeskTaskboardApi.Interface;
 using FlowdeskTaskboardApi.Models;
-using FlowdeskTaskboardApi.Models.ViewModels;
 using FlowdeskTaskboardApi.Models.ViewModels.Projects;
+using Microsoft.Extensions.Logging;
 
 namespace FlowdeskTaskboardApi.Services.ProjectServices
 {
-    public class ProjectService
+    public class ProjectService : IProjectService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogService _logService;
         private readonly IErrorService _errorService;
+        private readonly ILogger<ProjectService> _logger;
 
-        public ProjectService(IUnitOfWork unitOfWork, ILogService logService, IErrorService errorService)
+        public ProjectService(
+            IUnitOfWork unitOfWork,
+            ILogService logService,
+            IErrorService errorService,
+            ILogger<ProjectService> logger)
         {
             _unitOfWork = unitOfWork;
             _logService = logService;
             _errorService = errorService;
+            _logger = logger;
         }
 
         // Create Project
@@ -36,13 +43,16 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
                 await _unitOfWork.Repository<Project>().AddAsync(project);
                 await _unitOfWork.CommitAsync();
 
+                // Logging
                 await _logService.LogAsync("Information", $"Project created: {project.Name}", source: "CreateAsync");
+                _logger.LogInformation("Project created: {ProjectId} - {Name}", project.Id, project.Name);
 
                 return project;
             }
             catch (Exception ex)
             {
                 await _errorService.SaveErrorAsync(ex, "CreateAsync");
+                _logger.LogError(ex, "Error creating project {Name}", dto.Name);
                 throw;
             }
         }
@@ -64,11 +74,14 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
                 repo.Update(project);
                 await _unitOfWork.CommitAsync();
 
+                // Logging
                 await _logService.LogAsync("Information", $"Project updated: {project.Id}", source: "UpdateAsync");
+                _logger.LogInformation("Project updated: {ProjectId}", project.Id);
             }
             catch (Exception ex)
             {
                 await _errorService.SaveErrorAsync(ex, "UpdateAsync");
+                _logger.LogError(ex, "Error updating project {ProjectId}", id);
                 throw;
             }
         }
@@ -89,11 +102,14 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
                 repo.Update(project);
                 await _unitOfWork.CommitAsync();
 
+                // Logging
                 await _logService.LogAsync("Information", $"Project archived: {project.Id}", source: "ArchiveAsync");
+                _logger.LogInformation("Project archived: {ProjectId}", project.Id);
             }
             catch (Exception ex)
             {
                 await _errorService.SaveErrorAsync(ex, "ArchiveAsync");
+                _logger.LogError(ex, "Error archiving project {ProjectId}", id);
                 throw;
             }
         }

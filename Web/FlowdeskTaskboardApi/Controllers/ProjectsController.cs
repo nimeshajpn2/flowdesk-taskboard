@@ -1,17 +1,22 @@
-﻿using FlowdeskTaskboardApi.Models.ViewModels;
+﻿using FlowdeskTaskboardApi.Interface;
+using FlowdeskTaskboardApi.Models.ViewModels;
 using FlowdeskTaskboardApi.Models.ViewModels.Projects;
 using FlowdeskTaskboardApi.Services.ProjectServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlowdeskTaskboardApi.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/projects")]
+
     public class ProjectsController : ControllerBase
     {
-        private readonly ProjectService _service;
+        private readonly IProjectService _service;
 
-        public ProjectsController(ProjectService service)
+        public ProjectsController(IProjectService service)
         {
             _service = service;
         }
