@@ -81,6 +81,7 @@ namespace FlowdeskTaskboardApi.Controllers
         }
 
         // Get Tasks By Project 
+        [Authorize(Roles = "Admin,TeamLead")]
         [HttpGet("project/{projectId}")]
         public async Task<IActionResult> GetTasksByProject(
             int projectId,
