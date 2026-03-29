@@ -84,15 +84,22 @@ namespace FlowdeskTaskboardApi.Controllers
         [Authorize(Roles = "Admin,TeamLead")]
         [HttpGet("project/{projectId}")]
         public async Task<IActionResult> GetTasksByProject(
-            int projectId,
-            [FromQuery] string? status = null,
-            [FromQuery] string? priority = null,
-            [FromQuery] int? assignedToUserId = null)
+        int projectId,
+        [FromQuery] string? status = null,
+        [FromQuery] string? priority = null,
+        [FromQuery] int? assignedToUserId = null,
+        [FromQuery] int pageNumber = 1,      // default to page 1
+        [FromQuery] int pageSize = 10)       // default 10 items per page
         {
             try
             {
-                var tasks = await _service.GetTasksByProjectAsync(projectId, status, priority, assignedToUserId);
-                return Ok(new { Message = ResponseMessages.Task.FetchByProjectSuccess, Data = tasks });
+                var tasks = await _service.GetTasksByProjectAsync(projectId, status, priority, assignedToUserId, pageNumber, pageSize);
+
+                return Ok(new
+                {
+                    Message = ResponseMessages.Task.FetchByProjectSuccess,
+                    Data = tasks
+                });
             }
             catch (Exception ex)
             {
