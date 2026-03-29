@@ -27,7 +27,7 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    //Register User
+    //User Register
     public async Task<string> RegisterAsync(RegisterViewModel model)
     {
         try
@@ -43,51 +43,57 @@ public class UserService : IUserService
             if (!result.Succeeded)
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-            // Validate role
             var role = string.IsNullOrWhiteSpace(model.Role) ? Roles.User : model.Role;
 
             if (!Roles.AllRoles.Contains(role))
-                throw new Exception("Invalid role");
+                throw new Exception(ErrorMessages.Auth.InvalidRole);
 
             await _userManager.AddToRoleAsync(user, role);
 
-            // Log registration success
-            await _logService.LogAsync("Information", $"User registered: {user.UserName}, Role: {role}", source: "RegisterAsync");
-            _logger.LogInformation("User registered: {Username}, Role: {Role}", user.UserName, role);
+            await _logService.LogAsync(
+                CommonConstants.LogLevelInformation,
+                string.Format(LogMessages.Auth.UserRegistered, user.UserName, role),
+                CommonConstants.Register);
 
-            return "User registered successfully";
+            _logger.LogInformation(LogMessages.Auth.UserRegistered, user.UserName, role);
+
+            return ResponseMessages.Auth.UserRegistered;
         }
         catch (Exception ex)
         {
-            await _errorService.SaveErrorAsync(ex, "RegisterAsync");
-            _logger.LogError(ex, "Error registering user {Username}", model.Username);
+            await _errorService.SaveErrorAsync(ex, CommonConstants.Register);
+            _logger.LogError(ex, LogMessages.ErrorLogs.RegisterError, model.Username);
             throw;
         }
     }
 
-    //Login User
+    //User Login
     public async Task<string> LoginAsync(LoginViewModel model)
     {
         try
         {
             var user = await _userManager.FindByNameAsync(model.Username);
+            if(user is null)
+                throw new UnauthorizedAccessException(ErrorMessages.Auth.InvalidUser);
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-                throw new Exception( "Invalid credentials");
+                throw new UnauthorizedAccessException(ErrorMessages.Auth.InvalidPassword);
 
-            // Generate Token
             var token = await _jwtService.GenerateTokenAsync(user, _userManager);
 
-            // Log login success
-            await _logService.LogAsync("Information", $"User logged in: {user.UserName}", source: "LoginAsync");
-            _logger.LogInformation("User logged in: {Username}", user.UserName);
+            await _logService.LogAsync(
+                CommonConstants.LogLevelInformation,
+                string.Format(LogMessages.Auth.UserLoggedIn, user.UserName),null,
+                CommonConstants.Login);
+
+            _logger.LogInformation(LogMessages.Auth.UserLoggedIn, user.UserName);
 
             return token;
         }
         catch (Exception ex)
         {
-            await _errorService.SaveErrorAsync(ex, "LoginAsync");
-            _logger.LogError(ex, "Error logging in user {Username}", model.Username);
+            await _errorService.SaveErrorAsync(ex, CommonConstants.Login);
+            _logger.LogError(ex, LogMessages.ErrorLogs.LoginError, model.Username);
             throw;
         }
     }

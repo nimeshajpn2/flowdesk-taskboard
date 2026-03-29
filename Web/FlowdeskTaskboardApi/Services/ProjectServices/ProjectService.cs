@@ -3,6 +3,7 @@ using FlowdeskTaskboardApi.Helper;
 using FlowdeskTaskboardApi.Interface;
 using FlowdeskTaskboardApi.Models;
 using FlowdeskTaskboardApi.Models.ViewModels.Projects;
+using FlowdeskTaskboardApi.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace FlowdeskTaskboardApi.Services.ProjectServices
@@ -26,13 +27,13 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
             _logger = logger;
         }
 
-        // Create Project
+        //Create Project
         public async Task<Project> CreateAsync(CreateProjectViewModel dto)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(dto.Name))
-                    throw new Exception("Project name cannot be empty");
+                    throw new Exception(ErrorMessages.Project.NameRequired);
 
                 var project = new Project
                 {
@@ -43,21 +44,24 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
                 await _unitOfWork.Repository<Project>().AddAsync(project);
                 await _unitOfWork.CommitAsync();
 
-                // Logging
-                await _logService.LogAsync("Information", $"Project created: {project.Name}", source: "CreateAsync");
-                _logger.LogInformation("Project created: {ProjectId} - {Name}", project.Id, project.Name);
+                await _logService.LogAsync(
+                    CommonConstants.LogLevelInformation,
+                    string.Format(LogMessages.Project.Created, project.Id, project.Name),
+                    CommonConstants.Create);
+
+                _logger.LogInformation(LogMessages.Project.Created, project.Id, project.Name);
 
                 return project;
             }
             catch (Exception ex)
             {
-                await _errorService.SaveErrorAsync(ex, "CreateAsync");
-                _logger.LogError(ex, "Error creating project {Name}", dto.Name);
+                await _errorService.SaveErrorAsync(ex, CommonConstants.Create);
+                _logger.LogError(ex, LogMessages.ErrorLogs.ProjectCreateError, dto.Name);
                 throw;
             }
         }
 
-        // Update Project
+        //Update Project
         public async Task UpdateAsync(int id, UpdateProjectViewModel dto)
         {
             try
@@ -66,7 +70,7 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
                 var project = await repo.GetByIdAsync(id);
 
                 if (project == null)
-                    throw new Exception("Project not found");
+                    throw new Exception(ErrorMessages.Project.NotFound);
 
                 project.Name = dto.Name ?? project.Name;
                 project.Description = dto.Description ?? project.Description;
@@ -74,19 +78,22 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
                 repo.Update(project);
                 await _unitOfWork.CommitAsync();
 
-                // Logging
-                await _logService.LogAsync("Information", $"Project updated: {project.Id}", source: "UpdateAsync");
-                _logger.LogInformation("Project updated: {ProjectId}", project.Id);
+                await _logService.LogAsync(
+                    CommonConstants.LogLevelInformation,
+                    string.Format(LogMessages.Project.Updated, project.Id),
+                    CommonConstants.Update);
+
+                _logger.LogInformation(LogMessages.Project.Updated, project.Id);
             }
             catch (Exception ex)
             {
-                await _errorService.SaveErrorAsync(ex, "UpdateAsync");
-                _logger.LogError(ex, "Error updating project {ProjectId}", id);
+                await _errorService.SaveErrorAsync(ex, CommonConstants.Update);
+                _logger.LogError(ex, LogMessages.ErrorLogs.ProjectUpdateError, id);
                 throw;
             }
         }
 
-        // Archive Project
+        //Soft Delete
         public async Task ArchiveAsync(int id)
         {
             try
@@ -95,34 +102,36 @@ namespace FlowdeskTaskboardApi.Services.ProjectServices
                 var project = await repo.GetByIdAsync(id);
 
                 if (project == null)
-                    throw new Exception("Project not found");
+                    throw new Exception(ErrorMessages.Project.NotFound);
 
                 project.IsArchived = true;
 
                 repo.Update(project);
                 await _unitOfWork.CommitAsync();
 
-                // Logging
-                await _logService.LogAsync("Information", $"Project archived: {project.Id}", source: "ArchiveAsync");
-                _logger.LogInformation("Project archived: {ProjectId}", project.Id);
+                await _logService.LogAsync(
+                    CommonConstants.LogLevelInformation,
+                    string.Format(LogMessages.Project.Archived, project.Id),
+                    CommonConstants.Archive);
+
+                _logger.LogInformation(LogMessages.Project.Archived, project.Id);
             }
             catch (Exception ex)
             {
-                await _errorService.SaveErrorAsync(ex, "ArchiveAsync");
-                _logger.LogError(ex, "Error archiving project {ProjectId}", id);
+                await _errorService.SaveErrorAsync(ex, CommonConstants.Archive);
+                _logger.LogError(ex, LogMessages.ErrorLogs.ProjectArchiveError, id);
                 throw;
             }
         }
 
-        // Get All Projects
+        //Get All Projects
         public async Task<List<Project>> GetAllAsync(bool includeArchived = false)
         {
             var repo = _unitOfWork.Repository<Project>();
-            var projects = await repo.FindAllAsync(p => includeArchived || !p.IsArchived);
-            return projects;
+            return await repo.FindAllAsync(p => includeArchived || !p.IsArchived);
         }
 
-        // Get Project By Id
+        //Get By Id
         public async Task<Project?> GetByIdAsync(int id)
         {
             var repo = _unitOfWork.Repository<Project>();

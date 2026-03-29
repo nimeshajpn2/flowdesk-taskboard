@@ -1,5 +1,6 @@
 ﻿using FlowdeskTaskboardApi.Interface;
 using FlowdeskTaskboardApi.Models.ViewModels.Auth;
+using FlowdeskTaskboardApi.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,8 +20,15 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
-        var result = await _userService.RegisterAsync(model);
-        return Ok(result);
+        try
+        {
+            var result = await _userService.RegisterAsync(model);
+            return Ok(new { Message = ResponseMessages.Auth.RegisterSuccess, Data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
     }
 
     //User Login
@@ -28,17 +36,24 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
-        var token = await _userService.LoginAsync(model);
-
-        // Set JWT as HttpOnly cookie
-        Response.Cookies.Append("jwtToken", token, new CookieOptions
+        try
         {
-            HttpOnly = true,
-            Secure = true, 
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddHours(1)
-        });
+            var token = await _userService.LoginAsync(model);
 
-        return Ok(new { Message = "Login successful" });
+            // Set JWT as HttpOnly cookie
+            Response.Cookies.Append("jwtToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddHours(1)
+            });
+
+            return Ok(new { Message = ResponseMessages.Auth.LoginSuccess,});
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(new { Message = ex.Message });
+        }
     }
 }
