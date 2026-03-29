@@ -35,7 +35,7 @@ Authentication uses **Token Cookie-based sessions**. Users must register and log
 ### Step 1: Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/nimeshajpn2/flowdesk-taskboard.git
 cd FlowDeskTaskboardApi
 ```
 
