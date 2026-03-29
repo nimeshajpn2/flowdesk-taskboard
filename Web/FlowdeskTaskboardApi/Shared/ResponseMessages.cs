@@ -8,6 +8,10 @@
             public const string LoginSuccess = "Login successful";
             public const string RegisterSuccess = "User registered successfully";  
             public const string InvalidCredentials = "Invalid username or password";
+            public const string LoggedOutSuccessfully = "Logged out successfully";
+            public const string UserInfoFetched = "User Info Fetched";
+            public const string UserNotLoggedin = "User not logged in";
+            public const string UserNotFound = "User Not Found";
         }
 
         public static class Project
