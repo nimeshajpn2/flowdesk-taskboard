@@ -86,12 +86,9 @@ This creates all tables and seeds initial data.
 
 ---
 
-## 6. Future Improvements (Optional)
-
-* Pagination & filtering for task/project lists
-* Unit & integration tests for key business logic
-* Global exception handling and structured logging
-* Deploy to cloud provider for live testing
+## 6. API Testing
+Used Postman API Collection for testing and exploring all endpoints.
+You can import the Postman collection to quickly interact with the API.
 
 ---
 
