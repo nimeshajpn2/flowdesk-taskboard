@@ -79,7 +79,7 @@ builder.Services.AddAuthentication(options =>
 //cors
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
-    build.WithOrigins("http://localhost:")
+    build.WithOrigins("http://localhost:3000")
          .AllowAnyMethod()
          .AllowAnyHeader()
          .AllowCredentials();
@@ -102,7 +102,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("corspolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 

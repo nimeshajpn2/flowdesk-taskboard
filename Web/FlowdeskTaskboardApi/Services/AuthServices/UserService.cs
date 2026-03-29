@@ -1,6 +1,7 @@
 ﻿using FlowdeskTaskboardApi.Helper;
 using FlowdeskTaskboardApi.Interface;
 using FlowdeskTaskboardApi.Models.ViewModels.Auth;
+using FlowdeskTaskboardApi.Models.ViewModels.Auth.FlowdeskTaskboardApi.Models.ViewModels.Auth;
 using FlowdeskTaskboardApi.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -94,6 +95,33 @@ public class UserService : IUserService
         {
             await _errorService.SaveErrorAsync(ex, CommonConstants.Login);
             _logger.LogError(ex, LogMessages.ErrorLogs.LoginError, model.Username);
+            throw;
+        }
+    }
+
+    //Get user info by Id
+    public async Task<UserViewModel?> GetByIdAsync(string id)
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+                return null;
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return new UserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName ?? "",
+                Email = user.Email ?? "",
+                Role = roles.FirstOrDefault() ?? ""
+            };
+        }
+        catch (Exception ex)
+        {
+            await _errorService.SaveErrorAsync(ex, "GetByIdAsync");
+            _logger.LogError(ex, "Error fetching user info by Id {UserId}", id);
             throw;
         }
     }
