@@ -97,11 +97,11 @@
               "type": "Microsoft.ApiManagement/service/apis",
               "name": "FlowdeskTaskboardApiapi/FlowdeskTaskboardApi",
               "properties": {
-                "displayName": "FlowdeskTaskboardApi",
+                "displayName": "FlowdeskTaskboardApi | v1",
                 "apiRevision": "1",
                 "description": null,
                 "subscriptionRequired": true,
-                "serviceUrl": null,
+                "serviceUrl": "https://flowdesktaskboardapi-f9byb0bedrd9gmg7.southeastasia-01.azurewebsites.net",
                 "path": "",
                 "protocols": [
                   "https"

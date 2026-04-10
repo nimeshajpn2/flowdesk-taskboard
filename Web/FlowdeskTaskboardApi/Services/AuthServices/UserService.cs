@@ -1,5 +1,6 @@
 ﻿using FlowdeskTaskboardApi.Helper;
 using FlowdeskTaskboardApi.Interface;
+using FlowdeskTaskboardApi.Models;
 using FlowdeskTaskboardApi.Models.ViewModels.Auth;
 using FlowdeskTaskboardApi.Models.ViewModels.Auth.FlowdeskTaskboardApi.Models.ViewModels.Auth;
 using FlowdeskTaskboardApi.Shared;
@@ -100,11 +101,12 @@ public class UserService : IUserService
     }
 
     //Get user info by Id
-    public async Task<UserViewModel?> GetByIdAsync(string id)
+    public async Task<UserViewModel?> GetUserByIdAsync(string id)
     {
         try
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.FindByIdAsync(id);
+
             if (user == null)
                 return null;
 
@@ -115,13 +117,49 @@ public class UserService : IUserService
                 Id = user.Id,
                 UserName = user.UserName ?? "",
                 Email = user.Email ?? "",
+                FullName = (user as ApplicationUser)?.FullName,
+                PhoneNumber = user.PhoneNumber,
                 Role = roles.FirstOrDefault() ?? ""
             };
         }
         catch (Exception ex)
         {
-            await _errorService.SaveErrorAsync(ex, "GetByIdAsync");
-            _logger.LogError(ex, "Error fetching user info by Id {UserId}", id);
+            await _errorService.SaveErrorAsync(ex, "GetUserByIdAsync");
+            _logger.LogError(ex, "Error fetching user {UserId}", id);
+            throw;
+        }
+    }
+
+    //Get users All
+    public async Task<List<UserViewModel>> GetAllUsersAsync()
+    {
+        try
+        {
+            var users = _userManager.Users.ToList();
+
+            var result = new List<UserViewModel>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+
+                result.Add(new UserViewModel
+                {
+                    Id = user.Id,
+                    UserName = user.UserName ?? "",
+                    Email = user.Email ?? "",
+                    FullName = (user as ApplicationUser)?.FullName,
+                    PhoneNumber = user.PhoneNumber,
+                    Role = roles.FirstOrDefault() ?? ""
+                });
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await _errorService.SaveErrorAsync(ex, "GetAllUsersAsync");
+            _logger.LogError(ex, "Error fetching all users");
             throw;
         }
     }

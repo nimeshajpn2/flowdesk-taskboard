@@ -71,7 +71,7 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { Message = ResponseMessages.Auth.UserNotLoggedin }); 
 
             // userIdClaim is usually a GUID string in Identity
-            var user = await _userService.GetByIdAsync(userIdClaim);
+            var user = await _userService.GetUserByIdAsync(userIdClaim);
 
             if (user is null)
                 return NotFound(new { Message = ResponseMessages.Auth.UserNotFound }); 

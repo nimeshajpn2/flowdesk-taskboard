@@ -54,7 +54,7 @@ namespace FlowdeskTaskApi.Test
 
             // Mock service to return null
             _userServiceMock
-             .Setup(x => x.GetByIdAsync(userId))
+             .Setup(x => x.GetUserByIdAsync(userId))
              .ReturnsAsync((UserViewModel?)null); 
             var result = await _controller.Me();
 
@@ -82,7 +82,7 @@ namespace FlowdeskTaskApi.Test
 
             // Mock service to return a valid user
             _userServiceMock
-                .Setup(x => x.GetByIdAsync(userId))
+                .Setup(x => x.GetUserByIdAsync(userId))
                 .ReturnsAsync(fakeUser);
 
             var result = await _controller.Me();

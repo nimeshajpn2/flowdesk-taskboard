@@ -7,6 +7,7 @@ namespace FlowdeskTaskboardApi.Interface
     {
         Task<string> RegisterAsync(RegisterViewModel model);
         Task<string> LoginAsync(LoginViewModel model);
-        Task<UserViewModel?> GetByIdAsync(string id);
+        Task<UserViewModel?> GetUserByIdAsync(string id);
+        Task<List<UserViewModel>> GetAllUsersAsync();
     }
 }
